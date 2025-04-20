@@ -4,8 +4,8 @@
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
-// @downloadURL  https://gist.github.com/Sheppsu/07265bed0d613d8df4f2b28afcaf1ec2/raw
-// @updateURL    https://gist.github.com/Sheppsu/07265bed0d613d8df4f2b28afcaf1ec2/raw
+// @downloadURL  https://github.com/Sheppsu/osu-fm-calculator-script/raw/refs/heads/main/script.user.js
+// @updateURL    https://github.com/Sheppsu/osu-fm-calculator-script/raw/refs/heads/main/script.user.js
 // ==/UserScript==
 
 var multiplierSettings = null;
