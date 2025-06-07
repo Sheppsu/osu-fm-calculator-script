@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         osu! mp fm multiplier calculator
-// @version      1.0.1
+// @version      1.1.0
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
@@ -60,10 +60,10 @@ function doModsMatch(scoreMods, multiplierMods, isStrict) {
 
 function parseScoreText(text) {
     const a = text.split("→")[0].trim().split("←");
-    return parseInt(a[a.length-1].trim().replaceAll(",", ""));
+    return parseInt(a[a.length - 1].trim().replaceAll(",", ""));
 }
 
-function applyMultipliers(gameElm) {
+function applyMultipliers(gameElm, isTeamVs) {
     const settings = multiplierSettings[matchAcronym];
 
     let blueTeamScore = 0;
@@ -85,11 +85,13 @@ function applyMultipliers(gameElm) {
             score = Math.round(score * (doModsMatch(scoreMods, multiplier.mods, settings.isStrict) ? multiplier.value : 1.0));
         }
 
-        const isBlue = scoreElm.querySelector(".mp-history-player-score__shapes").getAttribute("style").includes("shapes-team-blue");
-        if (isBlue) {
-            blueTeamScore += score;
-        } else {
-            redTeamScore += score;
+        if (isTeamVs) {
+            const isBlue = scoreElm.querySelector(".mp-history-player-score__shapes").getAttribute("style").includes("shapes-team-blue");
+            if (isBlue) {
+                blueTeamScore += score;
+            } else {
+                redTeamScore += score;
+            }
         }
 
         if (score === originalScore) {
@@ -99,24 +101,26 @@ function applyMultipliers(gameElm) {
         }
     }
 
-    // set team scores
-    const redScoreText = gameElm.querySelector(".mp-history-game__team-score.mp-history-game__team-score--red").querySelector(".mp-history-game__team-score-text.mp-history-game__team-score-text--score");
-    const blueScoreText = gameElm.querySelector(".mp-history-game__team-score.mp-history-game__team-score--blue").querySelector(".mp-history-game__team-score-text.mp-history-game__team-score-text--score");
-    const originalRedScore = parseScoreText(redScoreText.innerText);
-    const originalBlueScore = parseScoreText(blueScoreText.innerText);
-    if (originalRedScore !== redTeamScore) {
-        redScoreText.innerText = formatScore(originalRedScore) + " → " + formatScore(redTeamScore);
-    } else {
-        redScoreText.innerText = formatScore(redTeamScore);
-    }
-    if (originalBlueScore !== blueTeamScore) {
-        blueScoreText.innerText = formatScore(blueTeamScore) + " ← " + formatScore(originalBlueScore);
-    } else {
-        blueScoreText.innerText = formatScore(blueTeamScore);
-    }
+    if (isTeamVs) {
+        // set team scores
+        const redScoreText = gameElm.querySelector(".mp-history-game__team-score.mp-history-game__team-score--red").querySelector(".mp-history-game__team-score-text.mp-history-game__team-score-text--score");
+        const blueScoreText = gameElm.querySelector(".mp-history-game__team-score.mp-history-game__team-score--blue").querySelector(".mp-history-game__team-score-text.mp-history-game__team-score-text--score");
+        const originalRedScore = parseScoreText(redScoreText.innerText);
+        const originalBlueScore = parseScoreText(blueScoreText.innerText);
+        if (originalRedScore !== redTeamScore) {
+            redScoreText.innerText = formatScore(originalRedScore) + " → " + formatScore(redTeamScore);
+        } else {
+            redScoreText.innerText = formatScore(redTeamScore);
+        }
+        if (originalBlueScore !== blueTeamScore) {
+            blueScoreText.innerText = formatScore(blueTeamScore) + " ← " + formatScore(originalBlueScore);
+        } else {
+            blueScoreText.innerText = formatScore(blueTeamScore);
+        }
 
-    // set "team won by x"
-    gameElm.querySelector(".mp-history-game__results-text").innerHTML = `<strong>${redTeamScore > blueTeamScore ? "Red" : "Blue"} team wins</strong> by ${formatScore(Math.abs(blueTeamScore - redTeamScore))}`;
+        // set "team won by x"
+        gameElm.querySelector(".mp-history-game__results-text").innerHTML = `<strong>${redTeamScore > blueTeamScore ? "Red" : "Blue"} team wins</strong> by ${formatScore(Math.abs(blueTeamScore - redTeamScore))}`;
+    }
 
     // mark game as calculated
     gameElm.setAttribute("mod-multipliers-processed", null);
@@ -126,7 +130,7 @@ function hasBeenProcessed(gameElm) {
     return gameElm.hasAttribute("mod-multipliers-processed");
 }
 
-function loop() {
+function processResults() {
     // no settings for this tournament
     if (multiplierSettings[matchAcronym] === undefined) {
         return;
@@ -139,11 +143,12 @@ function loop() {
 
         // calculate and show new score
         const teamType = elm.querySelector(".mp-history-game__team-type");
+        const isTeamVs = teamType.getAttribute("title") === "Team VS" || teamType.getAttribute("data-orig-title") === "Team VS";
         const mods = Array.from(elm.querySelector(".mp-history-game__mods").children).map((mod) => mod.getAttribute("data-acronym"));
         // disregard dt/ht
         const filteredMods = mods.filter((mod) => !["DT", "NC", "HT", "DC"].includes(mod));
-        if ((teamType.getAttribute("title") === "Team VS" || teamType.getAttribute("data-orig-title") === "Team VS") && filteredMods.length === 0) {
-            applyMultipliers(elm);
+        if (filteredMods.length === 0) {
+            applyMultipliers(elm, isTeamVs);
         }
     }
 }
@@ -192,7 +197,7 @@ function onSettingsChange() {
     }
 }
 
-function createButton(label, icon="plus", danger=false) {
+function createButton(label, icon = "plus", danger = false) {
     const btn = document.createElement("button");
     btn.classList.add("btn-osu-big");
     if (danger) {
@@ -216,7 +221,7 @@ function createButton(label, icon="plus", danger=false) {
     iconOuter.classList.add("fa", "fa-fw");
 
     const iconInner = document.createElement("span");
-    iconInner.classList.add("fas", "fa-"+icon);
+    iconInner.classList.add("fas", "fa-" + icon);
 
     iconOuter.append(iconInner);
     iconContent.append(iconOuter);
@@ -229,7 +234,7 @@ function createButton(label, icon="plus", danger=false) {
 
 function createModIcon(acronym) {
     const icon = document.createElement("div");
-    icon.classList.add("mod", "mod--"+acronym);
+    icon.classList.add("mod", "mod--" + acronym);
     icon.setAttribute("mod-acronym", acronym);
     return icon;
 }
@@ -266,7 +271,7 @@ function createMultiplierRow(mods, multiplier) {
     const multiplierContainer = document.createElement("div");
 
     const multiplierLabel = document.createElement("span");
-    multiplierLabel.innerText = multiplier+"x";
+    multiplierLabel.innerText = multiplier + "x";
 
     const multiplierInput = document.createElement("input");
     multiplierInput.classList.add("account-edit-entry__input");
@@ -303,8 +308,8 @@ function createMultiplierRow(mods, multiplier) {
             modContainer.children.item(0).remove();
         }
         const mods = modInput.value.toUpperCase();
-        for (let i = 0; i < mods.length/2; i++) {
-            modContainer.append(createModIcon(mods.substring(i*2, i*2+2)));
+        for (let i = 0; i < mods.length / 2; i++) {
+            modContainer.append(createModIcon(mods.substring(i * 2, i * 2 + 2)));
         }
 
         // hide/show items
@@ -386,8 +391,7 @@ function createModMenu() {
 
     linkElm.append(
         linkIcon,
-        "FM Multipliers"
-    );
+        "FM Multipliers");
     bodyContainer.append(body);
     elm.append(linkElm, bodyContainer);
 
@@ -409,7 +413,7 @@ function setup() {
     matchAcronym = mpTitle.innerText.split(":")[0];
     mpTitle.insertAdjacentElement("afterend", createModMenu());
 
-    setInterval(loop, 500);
+    setInterval(processResults, 1000);
 }
 
 setup();
