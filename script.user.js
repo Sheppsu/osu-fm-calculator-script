@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         osu! mp fm multiplier calculator
-// @version      1.1.0
+// @version      1.1.1
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
@@ -70,7 +70,7 @@ function applyMultipliers(gameElm, isTeamVs) {
     let redTeamScore = 0;
 
     // check if the game finished
-    const scoreElms = gameElm.querySelectorAll(".mp-history-game__player-score.mp-history-player-score");
+    const scoreElms = gameElm.querySelectorAll(".mp-history-player-score");
     if (scoreElms.length === 0) {
         return;
     }
