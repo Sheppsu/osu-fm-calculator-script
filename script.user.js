@@ -11,6 +11,77 @@
 var multiplierSettings = null;
 var matchAcronym = null;
 
+const MOD_TYPES = {
+    EZ: "DifficultyReduction",
+    NF: "DifficultyReduction",
+    HT: "DifficultyReduction",
+    DC: "DifficultyReduction",
+    HR: "DifficultyIncrease",
+    SD: "DifficultyIncrease",
+    PF: "DifficultyIncrease",
+    DT: "DifficultyIncrease",
+    NC: "DifficultyIncrease",
+    HD: "DifficultyIncrease",
+    FL: "DifficultyIncrease",
+    BL: "DifficultyIncrease",
+    ST: "DifficultyIncrease",
+    AC: "DifficultyIncrease",
+    TP: "Conversion",
+    DA: "Conversion",
+    CL: "Conversion",
+    RD: "Conversion",
+    MR: "Conversion",
+    AL: "Conversion",
+    SG: "Conversion",
+    AT: "Automation",
+    CN: "Automation",
+    RX: "Automation",
+    AP: "Automation",
+    SO: "Automation",
+    TR: "Fun",
+    WG: "Fun",
+    SI: "Fun",
+    GR: "Fun",
+    DF: "Fun",
+    WU: "Fun",
+    WD: "Fun",
+    TC: "Fun",
+    BR: "Fun",
+    AD: "Fun",
+    MU: "Fun",
+    NS: "Fun",
+    MG: "Fun",
+    RP: "Fun",
+    AS: "Fun",
+    FR: "Fun",
+    BU: "Fun",
+    SY: "Fun",
+    DP: "Fun",
+    BM: "Fun",
+    TD: "System",
+    SV2: "System",
+    SR: "DifficultyReduction",
+    SW: "Conversion",
+    CS: "Conversion",
+    FF: "Fun",
+    NR: "DifficultyReduction",
+    FI: "DifficultyIncrease",
+    CO: "DifficultyIncrease",
+    DS: "Conversion",
+    IN: "Conversion",
+    HO: "Conversion",
+    "1K": "Conversion",
+    "2K": "Conversion",
+    "3K": "Conversion",
+    "4K": "Conversion",
+    "5K": "Conversion",
+    "6K": "Conversion",
+    "7K": "Conversion",
+    "8K": "Conversion",
+    "9K": "Conversion",
+    "10K": "Conversion"
+}
+
 function formatScore(num) {
     // insert commas for more readable numbers
     let s = "";
@@ -80,7 +151,7 @@ function applyMultipliers(gameElm, isTeamVs) {
         const originalScore = parseScoreText(scoreTextElm.innerText);
         let score = originalScore;
 
-        const scoreMods = Array.from(scoreElm.querySelector(".mp-history-player-score__info-box--mods").children).map((mod) => mod.getAttribute("data-acronym")).map((mod) => mod === "NC" ? "DT" : mod);
+        const scoreMods = Array.from(scoreElm.querySelector(".mp-history-player-score__info-box--mods").children).map((mod) => mod.children.item(0).getAttribute("data-acronym")).map((mod) => mod === "NC" ? "DT" : mod);
         for (const multiplier of settings.multipliers) {
             score = Math.round(score * (doModsMatch(scoreMods, multiplier.mods, settings.isStrict) ? multiplier.value : 1.0));
         }
@@ -144,7 +215,7 @@ function processResults() {
         // calculate and show new score
         const teamType = elm.querySelector(".mp-history-game__team-type");
         const isTeamVs = teamType.getAttribute("title") === "Team VS" || teamType.getAttribute("data-orig-title") === "Team VS";
-        const mods = Array.from(elm.querySelector(".mp-history-game__mods").children).map((mod) => mod.getAttribute("data-acronym"));
+        const mods = Array.from(elm.querySelector(".mp-history-game__mods").children).map((mod) => mod.children.item(0).getAttribute("data-acronym"));
         // disregard dt/ht
         const filteredMods = mods.filter((mod) => !["DT", "NC", "HT", "DC"].includes(mod));
         if (filteredMods.length === 0) {
@@ -233,10 +304,13 @@ function createButton(label, icon = "plus", danger = false) {
 }
 
 function createModIcon(acronym) {
+    const mod = document.createElement("div");
+    mod.classList.add("mod", "mod--type-" + (MOD_TYPES[acronym] ?? "Fun"));
     const icon = document.createElement("div");
-    icon.classList.add("mod", "mod--" + acronym);
-    icon.setAttribute("mod-acronym", acronym);
-    return icon;
+    icon.classList.add("mod__icon", "mod__icon--" + acronym);
+    icon.setAttribute("data-acronym", acronym);
+    mod.append(icon);
+    return mod;
 }
 
 function createMultiplierRow(mods, multiplier) {
