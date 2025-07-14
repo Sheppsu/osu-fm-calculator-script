@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         osu! mp fm multiplier calculator
-// @version      1.1.2
+// @version      1.1.3
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
