@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         osu! mp fm multiplier calculator
-// @version      1.1.3
+// @version      1.1.4
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
@@ -250,7 +250,7 @@ function onSettingsChange() {
         const multiplier = parseFloat(label.innerText.substring(0, label.innerText.length - 1));
 
         return {
-            mods: Array.from(row.children.item(0).children).map((item) => item.getAttribute("mod-acronym")),
+            mods: Array.from(row.children.item(0).children).map((item) => item.children.item(0).getAttribute("data-acronym")),
             value: multiplier
         }
     });
@@ -362,7 +362,7 @@ function createMultiplierRow(mods, multiplier) {
     editBtn.addEventListener("click", () => {
         // update values
         multiplierInput.value = parseFloat(multiplierLabel.innerText.substring(0, multiplierLabel.innerText.length - 1));
-        modInput.value = Array.from(modContainer.children).map((mod) => mod.getAttribute("mod-acronym")).join("");
+        modInput.value = Array.from(modContainer.children).map((mod) => mod.children.item(0).getAttribute("data-acronym")).join("");
 
         // hide/show items
         multiplierLabel.style.display = "none";
