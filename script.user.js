@@ -151,7 +151,7 @@ function applyMultipliers(gameElm, isTeamVs) {
         const originalScore = parseScoreText(scoreTextElm.innerText);
         let score = originalScore;
 
-        const scoreMods = Array.from(scoreElm.querySelector(".mp-history-player-score__info-box--mods").children).map((mod) => mod.children.item(0).getAttribute("data-acronym")).map((mod) => mod === "NC" ? "DT" : mod);
+        const scoreMods = Array.from(scoreElm.querySelector(".mp-history-player-score__info-box--mods").children.item(0).children).map((mod) => mod.children.item(0).getAttribute("data-acronym")).map((mod) => mod === "NC" ? "DT" : mod);
         for (const multiplier of settings.multipliers) {
             score = Math.round(score * (doModsMatch(scoreMods, multiplier.mods, settings.isStrict) ? multiplier.value : 1.0));
         }
