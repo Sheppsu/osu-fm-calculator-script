@@ -1,6 +1,6 @@
 // ==UserScript==
 // @name         osu! mp fm multiplier calculator
-// @version      1.1.4
+// @version      1.1.5
 // @description  show score after mod multipliers are applied
 // @author       Sheppsu
 // @match        https://osu.ppy.sh/community/matches/*
@@ -157,7 +157,7 @@ function applyMultipliers(gameElm, isTeamVs) {
         }
 
         if (isTeamVs) {
-            const isBlue = scoreElm.querySelector(".mp-history-player-score__shapes").getAttribute("style").includes("shapes-team-blue");
+            const isBlue = scoreElm.querySelector(".mp-history-player-score__shapes").classList.contains("mp-history-player-score__shapes--blue");
             if (isBlue) {
                 blueTeamScore += score;
             } else {
